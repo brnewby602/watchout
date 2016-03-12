@@ -1,30 +1,28 @@
 
-var boardWidth = 420;
+// SIZE OF THE BOARD
+var boardWidth = 420; 
 var boardHeight = 420;
-
+// SIZE OF CIRCLE ON BOARD
 var circleWidth = 10;
 var circleHeight = 10;
 var radius = 10;
 
+// SCORE DATA, FUNCTIONS,  AND VARIABLES
 var scoredata = [0, 0, 0];
-
-
+var startScore = false;
 var updateScoreBoard = function(scoredata) {
   var score = d3.select('.scoreboard').selectAll('div span').data(scoredata);
 
   score.text(function(d, i) { 
     return d; 
   });
-
-//  score.enter().append('span');
-
-    // score.text(function(d, i) { 
-    //   return d; 
-    // });
-
 };
-
+// Initialize score
 updateScoreBoard(scoredata);
+
+// MOUSE DATA, FUNCTIONS, AND VARIABLES
+var mouseData = [{x: 100, y: 100}];
+
 
 
 // Return the distance between two objects
@@ -35,6 +33,9 @@ var getDistance = function(dx, dy, dx2, dy2) {
 var collideOnce = false;
 // Moves the circle to new location based on drag events
 var dragmove = function (d, i) {
+
+
+  startScore = true;
 
   var dx = Math.max(0, Math.min(boardWidth - circleWidth, d3.event.x));
   var dy = Math.max(0, Math.min(boardHeight - circleHeight, d3.event.y));
@@ -81,7 +82,22 @@ var dragNode = d3.behavior.drag()
   .on('drag', dragmove);
 
 // Initial data for circles
-var data = [{'x': boardHeight, 'y': boardWidth}];
+var data = [{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
+{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
+{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
+{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
+{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
+{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
+{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
+{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
+{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
+{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
+{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
+{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
+{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth}
+
+
+];
 
 // ADD SVG CIRCLES BASED ON AMOUNT OF DATA
 var svg = d3.select('.board')
@@ -96,23 +112,31 @@ var update = function (data) {
   // Join new data with old data
   // console.log(data);
 
-  var circle = svg.selectAll('circle')
-    .data(data, function(d) {
-      d.x = Math.random() * boardHeight;
-      d.y = Math.random() * boardWidth;
-      return d; 
-    });
+  var circle = svg.selectAll('circle.enemy')
+    .data(data);
 
   // Update the circle's class css
   circle.attr('class', 'enemy');
   // UPDATE
-  circle.transition()
+  circle.transition().duration(3000)
     .attr('cx', function (d) {
       //console.log(d);
       return d.x;
     })
     .attr('cy', function (d) {
       return d.y;
+    })
+    .tween('custom', function(elementData, elementIndex) {
+      // will be called for each enemy as they are moving
+      return function() {
+      // retrieve x and y coordinates
+        var enemyX = this.cx.animVal.value;
+        var enemyY = this.cy.animVal.value;
+        // retrieve movableMouse object and its x and y coordinates
+        var mouseCircleData = svg.selectAll('.mouse').data();
+      };
+      // call getDistance to determien if a collision has occurred
+      // if collision
     });
   
   // EXIT
@@ -128,21 +152,32 @@ var update = function (data) {
 
   // Remove old elements as needed
   // circle.exit().remove();
+
+
 };
 
 // Call the initial update
-update(data);
+// update(data);
+// var observer = new MutationObserver(function(mutations) {
+//   mutations.forEach(function(mutationRecord) {
+//     console.log('change occured');
+//   });
+// });
+
+// var target = document.getElementsByClassName('enemy');
+// observer.observe(target, {attributes: true, attributeFilter: ['style']});
 
 // MOVABLE CIRCLE
 // Get the circle that is updated by the mouse
 var mouse = d3.select('svg');
 
-movableCircle = mouse.selectAll('.mouse').data([1]);
+movableCircle = mouse.selectAll('.mouse').data(mouseData);
 movableCircle.enter()
   .append('circle')
+  .attr('class', 'mouse')
   //.append('g')
-  .attr('cx', function (d) { return d * 50; })
-  .attr('cy', function (d) { return 50; })
+  .attr('cx', function (d) { return d.x; })
+  .attr('cy', function (d) { return d.y; })
   .attr('r', function (d) {
     return 10;
   }).style('fill', 'green')
@@ -152,16 +187,20 @@ movableCircle.enter()
 setInterval(function () {
   // var newData = d3.shuffle(data);
   for (var i = 0; i < data.length; i++) {
-    data.x = Math.random() * boardHeight;
-    data.y = Math.random() * boardWidth;
+    data[i].x = Math.random() * boardHeight;
+    data[i].y = Math.random() * boardWidth;
   }
 
   update(data);
-}, 5000);
+}, 1000);
 
 setInterval(function() {
-  scoredata[1] += 1;
-  updateScoreBoard(scoredata);
+
+  if (startScore) {
+    scoredata[1] += 1;
+    updateScoreBoard(scoredata);
+  }
+
 }, 500);
 
 
