@@ -53,6 +53,9 @@ var dragmove = function (d, i) {
   mouseData.x = dx;
   mouseData.y = dy;
 
+  d3.select(this).data(mouseData);
+
+
   var conflict = false;
   var enemyData = svg.selectAll('circle.enemy').data();
   
@@ -84,7 +87,8 @@ var dragNode = d3.behavior.drag()
   .on('drag', dragmove);
 
 // Initial data for circles
-var data = [{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
+var data = [{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth}];
+/* ,
 {'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
 {'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
 {'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
@@ -98,12 +102,24 @@ var data = [{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
 {'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
 {'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth}
 ];
-
+*/
 // ADD SVG CIRCLES BASED ON AMOUNT OF DATA
 var svg = d3.select('.board')
   .append('svg:svg')
   .attr('width', boardWidth)
   .attr('height', boardHeight);
+
+  // create filter with id #drop-shadow
+// height=130% so that the shadow is not clipped
+var filter = svg.append('filter')
+    .attr('id', 'shuriken')
+    .attr('height', '100%')
+    .attr('width', '100%')
+    .attr('x', '0%')
+    .attr('y', '0%');
+
+filter.append('feImage')
+      .attr('xlink:href', './shuriken.png');
 
 // Update function for updating the location of the circles
 // Updates the location of the circles on the screen
@@ -114,6 +130,8 @@ var update = function (data) {
 
   var circle = svg.selectAll('circle.enemy')
     .data(data);
+
+
 
   // Update the circle's class css
   circle.attr('class', 'enemy');
@@ -126,6 +144,8 @@ var update = function (data) {
     .attr('cy', function (d) {
       return d.y;
     })
+    
+    
     .tween('custom', function(elementData, elementIndex) {
       // will be called for each enemy as they are moving
       return function() {
@@ -153,7 +173,8 @@ var update = function (data) {
       return d.x;
     })
     .attr('cy', function(d) { return d.y; })
-    .attr('r', 10);
+    .attr('r', 10)
+    .attr('filter', 'url(#shuriken)');
 };
 
 // MOVABLE CIRCLE
@@ -181,7 +202,7 @@ setInterval(function () {
   }
 
   update(data);
-}, 1000);
+}, 3000);
 
 setInterval(function() {
 
