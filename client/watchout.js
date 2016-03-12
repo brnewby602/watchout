@@ -12,10 +12,23 @@ var scoredata = [0, 0, 0];
 var startScore = false;
 var updateScoreBoard = function(scoredata) {
   var score = d3.select('.scoreboard').selectAll('div span').data(scoredata);
-
   score.text(function(d, i) { 
     return d; 
   });
+};
+// Collision detection
+var collideOnce = false;
+var resetCollisions = function() {
+  if (scoredata[1] > scoredata[0]) {
+    scoredata[0] = scoredata[1];
+  }
+  if (!collideOnce) { // Allows collision to be updated once per collision
+    scoredata[2] += 1;
+  }
+  collideOnce = true;
+  scoredata[1] = 0;
+  
+  updateScoreBoard(scoredata);
 };
 // Initialize score
 updateScoreBoard(scoredata);
@@ -23,47 +36,36 @@ updateScoreBoard(scoredata);
 // MOUSE DATA, FUNCTIONS, AND VARIABLES
 var mouseData = [{x: 100, y: 100}];
 
-
-
+// HELPER FUNCTIONS
 // Return the distance between two objects
 var getDistance = function(dx, dy, dx2, dy2) {
   var sum = Math.pow(dx2 - dx, 2) + Math.pow(dy2 - dy, 2);
   return Math.sqrt(sum);
 };
-var collideOnce = false;
+
 // Moves the circle to new location based on drag events
 var dragmove = function (d, i) {
-
-
   startScore = true;
 
+  // Detect new loaction from mouse drag movements
   var dx = Math.max(0, Math.min(boardWidth - circleWidth, d3.event.x));
   var dy = Math.max(0, Math.min(boardHeight - circleHeight, d3.event.y));
-  var conflict = false;
-  
-  //var yConflict = false;
+  mouseData.x = dx;
+  mouseData.y = dy;
 
+  var conflict = false;
   var enemyData = svg.selectAll('circle.enemy').data();
+  
   for (var i = 0; i < enemyData.length; i++) {
     if (getDistance(dx, dy, enemyData[i].x, enemyData[i].y) < 2 * radius) {
       conflict = true;
     }
   }
 
+  // if a conflict is detected, update score
   if (conflict) {
-    if (scoredata[1] > scoredata[0]) {
-      scoredata[0] = scoredata[1];
-    }
-
-    if (!collideOnce) {
-      scoredata[2] += 1;
-    }
-
-    collideOnce = true;
-    scoredata[1] = 0;
-    
-    updateScoreBoard(scoredata);
-  } else {
+    resetCollisions();
+  } else {  // updates collision once detection if the same collision is no longer detected
     if (collideOnce) {
       collideOnce = false;
     }
@@ -95,8 +97,6 @@ var data = [{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
 {'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
 {'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
 {'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth}
-
-
 ];
 
 // ADD SVG CIRCLES BASED ON AMOUNT OF DATA
@@ -134,12 +134,17 @@ var update = function (data) {
         var enemyY = this.cy.animVal.value;
         // retrieve movableMouse object and its x and y coordinates
         var mouseCircleData = svg.selectAll('.mouse').data();
+        // call getDistance to determien if a collision has occurred
+        // if collision detected, reset the collision count
+        if (getDistance(enemyX, enemyY, mouseCircleData.x, mouseCircleData.y) < 2 * radius) {
+          resetCollisions();
+        } else { // updates collision once detection if the same collision is no longer detected
+          if (collideOnce) {
+            collideOnce = false;
+          }
+        }
       };
-      // call getDistance to determien if a collision has occurred
-      // if collision
     });
-  
-  // EXIT
 
   // ENTER
   circle.enter().append('circle')
@@ -149,23 +154,7 @@ var update = function (data) {
     })
     .attr('cy', function(d) { return d.y; })
     .attr('r', 10);
-
-  // Remove old elements as needed
-  // circle.exit().remove();
-
-
 };
-
-// Call the initial update
-// update(data);
-// var observer = new MutationObserver(function(mutations) {
-//   mutations.forEach(function(mutationRecord) {
-//     console.log('change occured');
-//   });
-// });
-
-// var target = document.getElementsByClassName('enemy');
-// observer.observe(target, {attributes: true, attributeFilter: ['style']});
 
 // MOVABLE CIRCLE
 // Get the circle that is updated by the mouse
