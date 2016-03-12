@@ -4,21 +4,21 @@
     <link rel='stylesheet' type='css' href='styles.css'>
   </head>
   <body>
-    <!--CREATE SVG ELEMENTS-->
-    <svg width="720" height="120">
-
-    </svg>
-
-    <div class="scoreboard">
+   <div class="scoreboard">
       <!-- Modify the scoreboard when important events occur in your game! -->
       <div class="highscore">High score: <span>0</span></div>
       <div class="current">Current score: <span>0</span></div>
       <div class="collisions">Collisions: <span>0</span></div>
     </div>
-    <div class="board"><div class="mouse">
-      <svg width='100' height='100'>
-        <circle cx="40" cy="20" r="10" style="fill: red"></circle>
-      </svg> <!-- movable circle --></div></div>
+    <div class="board">
+      <!--CREATE SVG ELEMENTS-->
+      <svg width="720" height="720">
+        <div class="mouse">
+          <!-- movable circle -->
+          <circle cx="40" cy="20" r="10" style="fill: red"></circle>
+        </div>
+      </svg>
+    </div>
     <script src="lib/d3.js" charset="utf-8"></script>
     <script src='watchout.js'></script>
   </body>
