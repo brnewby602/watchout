@@ -6,18 +6,40 @@ var circleWidth = 10;
 var circleHeight = 10;
 var radius = 10;
 
+var scoredata = [0, 0, 0];
+
+
+var updateScoreBoard = function(scoredata) {
+  var score = d3.select('.scoreboard').selectAll('div span').data(scoredata);
+
+  score.text(function(d, i) { 
+    return d; 
+  });
+
+//  score.enter().append('span');
+
+    // score.text(function(d, i) { 
+    //   return d; 
+    // });
+
+};
+
+updateScoreBoard(scoredata);
+
+
 // Return the distance between two objects
 var getDistance = function(dx, dy, dx2, dy2) {
   var sum = Math.pow(dx2 - dx, 2) + Math.pow(dy2 - dy, 2);
   return Math.sqrt(sum);
 };
-
+var collideOnce = false;
 // Moves the circle to new location based on drag events
 var dragmove = function (d, i) {
 
   var dx = Math.max(0, Math.min(boardWidth - circleWidth, d3.event.x));
   var dy = Math.max(0, Math.min(boardHeight - circleHeight, d3.event.y));
   var conflict = false;
+  
   //var yConflict = false;
 
   var enemyData = svg.selectAll('circle.enemy').data();
@@ -28,9 +50,22 @@ var dragmove = function (d, i) {
   }
 
   if (conflict) {
-    console.log('conflict');
+    if (scoredata[1] > scoredata[0]) {
+      scoredata[0] = scoredata[1];
+    }
+
+    if (!collideOnce) {
+      scoredata[2] += 1;
+    }
+
+    collideOnce = true;
+    scoredata[1] = 0;
+    
+    updateScoreBoard(scoredata);
   } else {
-    console.log('not conflict');
+    if (collideOnce) {
+      collideOnce = false;
+    }
   }
 
   d3.select(this)
@@ -124,6 +159,10 @@ setInterval(function () {
   update(data);
 }, 5000);
 
+setInterval(function() {
+  scoredata[1] += 1;
+  updateScoreBoard(scoredata);
+}, 500);
 
 
 
