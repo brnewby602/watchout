@@ -40,7 +40,9 @@ var mouseData = [{x: 100, y: 100}];
 // Return the distance between two objects
 var getDistance = function(dx, dy, dx2, dy2) {
   var sum = Math.pow(dx2 - dx, 2) + Math.pow(dy2 - dy, 2);
-  return Math.sqrt(sum);
+  var result = Math.sqrt(sum);
+
+  return result;
 };
 
 // Moves the circle to new location based on drag events
@@ -50,20 +52,24 @@ var dragmove = function (d, i) {
   // Detect new loaction from mouse drag movements
   var dx = Math.max(0, Math.min(boardWidth - circleWidth, d3.event.x));
   var dy = Math.max(0, Math.min(boardHeight - circleHeight, d3.event.y));
-  mouseData.x = dx;
-  mouseData.y = dy;
 
-  d3.select(this).data(mouseData);
+  var x = d3.select(this).attr('cx');
+  var y = d3.select(this).attr('cy');
 
 
   var conflict = false;
-  var enemyData = svg.selectAll('circle.enemy').data();
+  var enemies = svg.selectAll('circle.enemy');
   
-  for (var i = 0; i < enemyData.length; i++) {
-    if (getDistance(dx, dy, enemyData[i].x, enemyData[i].y) < 2 * radius) {
+ 
+  enemies.each( function() {
+    var enemy = d3.select(this);
+    var enemyX = enemy.attr('cx');
+    var enemyY = enemy.attr('cy');
+
+    if (getDistance(x, y, enemyX, enemyY) < (2 * radius)) {
       conflict = true;
     }
-  }
+  });
 
   // if a conflict is detected, update score
   if (conflict) {
@@ -87,8 +93,7 @@ var dragNode = d3.behavior.drag()
   .on('drag', dragmove);
 
 // Initial data for circles
-var data = [{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth}];
-/* ,
+var data = [{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
 {'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
 {'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
 {'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
@@ -102,7 +107,7 @@ var data = [{'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth}]
 {'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth},
 {'x': Math.random() * boardHeight, 'y': Math.random() * boardWidth}
 ];
-*/
+
 // ADD SVG CIRCLES BASED ON AMOUNT OF DATA
 var svg = d3.select('.board')
   .append('svg:svg')
@@ -153,10 +158,12 @@ var update = function (data) {
         var enemyX = this.cx.animVal.value;
         var enemyY = this.cy.animVal.value;
         // retrieve movableMouse object and its x and y coordinates
-        var mouseCircleData = svg.selectAll('.mouse').data();
+        var mouseX = svg.selectAll('.mouse').attr('cx');
+        var mouseY = svg.selectAll('.mouse').attr('cy');
+
         // call getDistance to determien if a collision has occurred
         // if collision detected, reset the collision count
-        if (getDistance(enemyX, enemyY, mouseCircleData.x, mouseCircleData.y) < 2 * radius) {
+        if (getDistance(enemyX, enemyY, mouseX, mouseY) < 2 * radius) {
           resetCollisions();
         } else { // updates collision once detection if the same collision is no longer detected
           if (collideOnce) {
